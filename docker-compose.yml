@@ -1,0 +1,24 @@
+version: '3'
+services:
+  nginx:
+    build:
+    # 現在のビルド対象の場所よりも外側のファイルを参照しようとするとエラーになる
+    # nginxディレクトリではなくdocker-compose.ymlの階層をビルドコンテキストにする
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    container_name: nginx
+    ports: 
+      - "8080:8080"
+    volumes:
+      - ./nginx/config/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/src:/var/www
+  next:
+    build:
+      context: .
+      dockerfile: ./next/Dockerfile
+    container_name: next
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./next:/usr/app
+    command: npm run dev
