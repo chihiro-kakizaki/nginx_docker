@@ -2,20 +2,32 @@ version: '3'
 services:
   nginx:
     build:
-    # 現在のビルド対象の場所よりも外側のファイルを参照しようとするとエラーになる
-    # nginxディレクトリではなくdocker-compose.ymlの階層をビルドコンテキストにする
+      # 現在のビルド対象の場所よりも外側のファイルを参照しようとするとエラーになる
+      # nginxディレクトリではなくdocker-compose.ymlの階層をビルドコンテキストにする
       context: .
       dockerfile: ./nginx/Dockerfile
+      args:
+        # location末尾/なし、proxy_pass末尾/なし
+        # GET /test2 → GET /test2
+        # 参照：https://kuroeveryday.blogspot.com/2019/03/effect-of-trailing-slash-on-nginx-reverse-proxy.html
+        BASE_PATH: '/test2'
+        HTTP_PROXY: 'http://next:3000/test2'
     container_name: nginx
     ports: 
       - "8080:8080"
     volumes:
       - ./nginx/config/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/config/default.conf.template:/etc/nginx/conf.d/default.conf.template
       - ./nginx/src:/var/www
+    # <によって読み込まれたテンプレートファイルの中にある$がついた変数を環境変数に置き換えて、>で指定されたファイルに出力
+    # 参照：https://qiita.com/ttiger55/items/5d66108c56554889d8b8
+    command: /bin/sh -c "envsubst '$$BASE_PATH $$HTTP_PROXY' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
   next:
     build:
       context: .
       dockerfile: ./next/Dockerfile
+      args:
+        BASE_PATH: '/test2'
     container_name: next
     ports:
       - "3000:3000"

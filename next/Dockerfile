@@ -1,4 +1,6 @@
 FROM node:16
 
 WORKDIR /usr/app
-COPY ./next /usr/app
+
+ARG BASE_PATH 
+ENV BASE_PATH ${BASE_PATH}
