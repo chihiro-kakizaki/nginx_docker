@@ -1,0 +1,28 @@
+ server {
+        listen       8080 default_server;
+        listen       [::]:8080 default_server;
+
+        location / {
+            root   /var/www/top;
+        }
+
+        location /hoge {
+            alias /var/www/hoge;
+        }
+
+        location /fuga {
+            alias  /var/www/fuga;
+            index fuga.html;
+        }
+
+        location ${BASE_PATH} {
+            proxy_pass ${HTTP_PROXY};
+            proxy_redirect off;
+        }
+        
+        location /google {
+            proxy_set_header Host google.com;
+            proxy_pass https://www.google.com/;
+            proxy_redirect off;
+        }
+    }
